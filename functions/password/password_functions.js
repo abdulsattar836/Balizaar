@@ -204,5 +204,6 @@ const setPassword = (model) =>
 module.exports = {
   userPasswordCheck,
   forgetPassword,
+
   setPassword,
 };
