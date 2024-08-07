@@ -8,6 +8,8 @@ const user_model = require("../Model/user_model");
 const CryptoJS = require("crypto-js");
 // utility functions
 const { successMessage } = require("../functions/success/success_functions");
+//validate password
+const {validatePassword}=require("../utils/validation/validate password")
 // validation
 const {
   signupUserValidation,
@@ -19,15 +21,105 @@ const {
   generateAccessTokenRefreshToken,
 } = require("../utils/verifyToken_util");
 const sendOTPEmail = require("../utils/sendEmail/emailsend");
+//
+const {
+  isOtpExpired,
+  decryptOtp,
+} = require("../functions/otp expiry/otp_expiry");
+
 
 const generateOTP = () => {
   const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generates a 6-digit OTP
-  return otp;
+    const expirationTime = new Date().getTime() + 5 * 60 * 1000; // Current time + 5minutes
+  return { otp, expirationTime };
 };
 
 // method POST
 // route /api/v1/user/signup
 // @description for signup of user
+// const signUpUser = catchAsync(async (req, res, next) => {
+//   // Validate request body
+//   const { error, value } = signupUserValidation.validate(req.body);
+//   if (error) {
+//     const errors = error.details.map((el) => el.message);
+//     return next(new AppError(errors, 400));
+//   }
+
+//   const { name, email, phoneNumber, password, location } = value;
+
+//   // Check if user already exists
+//   let existingUser = await user_model.findOne({ email });
+//   let otpData;
+//   let encryptPassword;
+//   let encryptOtp;
+
+//   if (existingUser) {
+//     if (existingUser.isVerified) {
+//       // User is already verified, prompt to log in
+//       return next(
+//         new AppError("You are already signed up, please log in", 400)
+//       );
+//     } else {
+//       // Encrypt the new password
+//       encryptPassword = CryptoJS.AES.encrypt(
+//         password,
+//         process.env.CRYPTO_SEC
+//       ).toString();
+
+//       // Generate and encrypt OTP
+//       otpData = generateOTP();
+//       encryptOtp = CryptoJS.AES.encrypt(
+//         otpData.otp,
+//         process.env.CRYPTO_SEC
+//       ).toString();
+
+//       existingUser.name = name;
+//       existingUser.password = encryptPassword;
+//       existingUser.phoneNumber = phoneNumber;
+//       existingUser.location = location;
+//       existingUser.otp = encryptOtp;
+//       await existingUser.save();
+
+//       // Send OTP email
+//       await sendOTPEmail(email, otpData.otp);
+//     }
+//   } else {
+//     // Encrypt password
+//     encryptPassword = CryptoJS.AES.encrypt(
+//       password,
+//       process.env.CRYPTO_SEC
+//     ).toString();
+
+//     // Generate and encrypt OTP
+//     otpData = generateOTP();
+//     encryptOtp = CryptoJS.AES.encrypt(
+//       otpData.otp,
+//       process.env.CRYPTO_SEC
+//     ).toString();
+
+//     // Create a new user with encrypted OTP
+//     const newUser = await user_model.create({
+//       name,
+//       email,
+//       phoneNumber,
+//       password: encryptPassword,
+//       location,
+//       otp: encryptOtp,
+//     });
+
+
+//     // Send OTP email
+//     await sendOTPEmail(email, otpData.otp);
+//   }
+
+//   return successMessage(
+//     202,
+//     res,
+//     "OTP sent to your email, please verify your account",
+//     null
+//   );
+// });
+
 const signUpUser = catchAsync(async (req, res, next) => {
   // Validate request body
   const { error, value } = signupUserValidation.validate(req.body);
@@ -40,6 +132,9 @@ const signUpUser = catchAsync(async (req, res, next) => {
 
   // Check if user already exists
   let existingUser = await user_model.findOne({ email });
+  let otpData;
+  let encryptPassword;
+  let encryptOtp;
 
   if (existingUser) {
     if (existingUser.isVerified) {
@@ -48,56 +143,68 @@ const signUpUser = catchAsync(async (req, res, next) => {
         new AppError("You are already signed up, please log in", 400)
       );
     } else {
-      // User is not verified, resend OTP
-      const otp = generateOTP();
-      existingUser.otp = otp;
+      // Encrypt the new password
+      encryptPassword = CryptoJS.AES.encrypt(
+        password,
+        process.env.CRYPTO_SEC
+      ).toString();
+
+      // Generate OTP with expiration time
+      otpData = generateOTP();
+      const expirationTime = new Date().getTime() + 1 * 60 * 1000; 
+      encryptOtp = CryptoJS.AES.encrypt(
+        JSON.stringify({ otp: otpData.otp, expirationTime }),
+        process.env.CRYPTO_SEC
+      ).toString();
+
+      existingUser.name = name;
+      existingUser.password = encryptPassword;
+      existingUser.phoneNumber = phoneNumber;
+      existingUser.location = location;
+      existingUser.otp = encryptOtp;
       await existingUser.save();
-      await sendOTPEmail(email, otp);
-      return successMessage(202, res, "OTP resent, please verify your email", {
-        email,
-      });
+
+      // Send OTP email
+      await sendOTPEmail(email, otpData.otp);
     }
   } else {
     // Encrypt password
-    const encryptPassword = CryptoJS.AES.encrypt(
+    encryptPassword = CryptoJS.AES.encrypt(
       password,
       process.env.CRYPTO_SEC
     ).toString();
 
-    // Create a new user with OTP
-    const otp = generateOTP();
-    newUser = await user_model.create({
+    // Generate OTP with expiration time
+    otpData = generateOTP();
+    const expirationTime = new Date().getTime() + 1 * 60 * 1000; 
+    encryptOtp = CryptoJS.AES.encrypt(
+      JSON.stringify({ otp: otpData.otp, expirationTime }),
+      process.env.CRYPTO_SEC
+    ).toString();
+
+    // Create a new user with encrypted OTP
+    const newUser = await user_model.create({
       name,
       email,
       phoneNumber,
       password: encryptPassword,
       location,
-      otp,
+      otp: encryptOtp,
     });
 
-    await sendOTPEmail(email, otp);
-
-    // Remove sensitive data before sending response
-    newUser = JSON.parse(JSON.stringify(newUser));
-    newUser.password = undefined;
-    newUser.refreshToken = undefined;
-
-    const { refreshToken, accessToken } = generateAccessTokenRefreshToken(
-      newUser._id
-    );
-
-    return successMessage(
-      202,
-      res,
-      "Sign-up successful, please verify your email",
-      {
-        ...newUser,
-        accessToken,
-        refreshToken,
-      }
-    );
+    // Send OTP email
+    await sendOTPEmail(email, otpData.otp);
   }
+
+  return successMessage(
+    202,
+    res,
+    "OTP sent to your email, please verify your account",
+    null
+  );
 });
+
+
 
 // method POST
 // route /api/v1/user/login
@@ -143,7 +250,52 @@ const loginUser = catchAsync(async (req, res, next) => {
   });
 });
 
-const verifyOTP = catchAsync(async (req, res, next) => {
+// const verifyAccount = catchAsync(async (req, res, next) => {
+//   const { email, otp } = req.body;
+
+//   // Validate request
+//   if (!email || !otp) {
+//     return next(new AppError("Email and OTP are required", 400));
+//   }
+
+//   // Find user by email
+//   const newUser = await user_model.findOne({ email });
+
+//   if (!newUser) {
+//     return next(new AppError("User not found", 404));
+//   }
+//  if (isOtpExpired(newUser.otpExpirationTime)) {
+//    return next(new AppError("OTP has expired", 400));
+//  }
+//   // Check if user is already verified
+//   if (newUser.isVerified) {
+//     return next(new AppError("User is already verified", 400));
+//   }
+
+//   console.log("Stored OTP:", newUser.otp);
+//   console.log("Provided OTP:", otp);
+
+//  const decryptOtp = CryptoJS.AES.decrypt(
+//     newUser.otp,
+//     process.env.CRYPTO_SEC
+//   ).toString(CryptoJS.enc.Utf8);
+
+//   // Compare OTP
+//   if (decryptOtp !== otp) {
+//     return next(new AppError("Invalid OTP", 400));
+//   }
+
+//   // Mark user as verified
+//   newUser.isVerified = true;
+//   newUser.isBlocked = false;
+//   newUser.otp = undefined; // Clear OTP after successful verification
+//   await newUser.save();
+
+//   // Send success response
+//   return successMessage(200, res, "Email verified successfully",);
+// });
+
+const verifyAccount = catchAsync(async (req, res, next) => {
   const { email, otp } = req.body;
 
   // Validate request
@@ -152,83 +304,205 @@ const verifyOTP = catchAsync(async (req, res, next) => {
   }
 
   // Find user by email
-  const newUser = await user_model.findOne({ email });
+  const user = await user_model.findOne({ email });
 
-  if (!newUser) {
+  if (!user) {
     return next(new AppError("User not found", 404));
   }
 
+  // Decrypt OTP and check expiration
+  const decryptedOtpData = CryptoJS.AES.decrypt(
+    user.otp,
+    process.env.CRYPTO_SEC
+  ).toString(CryptoJS.enc.Utf8);
+  const { otp: storedOtp, expirationTime } = JSON.parse(decryptedOtpData);
+
+  // Check if OTP has expired
+   const currentTime = new Date().getTime();
+   if (currentTime > expirationTime) {
+     return next(new AppError("Verification code has expired.", 400));
+   }
+
   // Check if user is already verified
-  if (newUser.isVerified) {
+  if (user.isVerified) {
     return next(new AppError("User is already verified", 400));
   }
 
-  console.log("Stored OTP:", newUser.otp);
+  console.log("Stored OTP:", storedOtp);
   console.log("Provided OTP:", otp);
 
   // Compare OTP
-  if (newUser.otp !== otp) {
+  if (storedOtp !== otp) {
     return next(new AppError("Invalid OTP", 400));
   }
 
   // Mark user as verified
-  newUser.isVerified = true;
-  newUser.otp = undefined; // Clear OTP after successful verification
-  await newUser.save();
-
-  // Generate tokens
-  const { refreshToken, accessToken } = generateAccessTokenRefreshToken(
-    newUser._id
-  );
+  user.isVerified = true;
+  user.isBlocked = false;
+  user.otp = undefined; // Clear OTP after successful verification
+  await user.save();
 
   // Send success response
-  return successMessage(200, res, "Email verified successfully", {
-    accessToken,
-    refreshToken,
-  });
+  return successMessage(200, res, "Email verified successfully");
+});
+
+
+const updateProfile = catchAsync(async (req, res, next) => {
+  // Validate request body
+  const { error, value } = updateprofileValidation.validate(req.body);
+  if (error) {
+    const errors = error.details.map((el) => el.message);
+    return next(new AppError(errors, 400));
+  }
+
+  const { name, email, phoneNumber, location } = value;
+  const userId = req.user.id; // Assuming user ID is available in req.user
+
+  // Find and update user profile
+  let updatedUser = await user_model.findByIdAndUpdate(
+    userId,
+    { name, email, phoneNumber, location },
+    { new: true } // Return the updated document
+  );
+
+  if (!updatedUser) {
+    return next(new AppError("User not found", 404));
+  }
+
+  // Remove sensitive data before sending response
+  updatedUser = JSON.parse(JSON.stringify(updatedUser));
+  updatedUser.password = undefined;
+  updatedUser.refreshToken = undefined;
+
+  return successMessage(200, res, "Profile updated successfully", updatedUser);
 });
 
 
 
-const updateProfile = catchAsync(async (req, res, next) => {
-    // Validate request body
-    const { error, value } = updateprofileValidation.validate(req.body);
-    if (error) {
-      const errors = error.details.map((el) => el.message);
+const otpValidation = catchAsync(async (req, res, next) => {
+  const { email, otp } = req.query;
+  // Decrypt the encrypted options and compare with the user-entered code
+    if (!email || !otp ) {
+      return next(new AppError("Email and OTP are required", 400));
+    }
+
+    const user = await user_model.findOne({ email });
+    if (!user) {
+      return next(new AppError("No user with this email", 400));
+    }
+      const encryptOpts = user.forgetPassword; // Assuming `forgetPassword` contains the encrypted OTP options
+      if (!encryptOpts) {
+        return next(new AppError("No OTP found for this user.", 400));
+      }
+  const decrypted = CryptoJS.AES.decrypt(
+    decodeURIComponent(encryptOpts),
+    process.env.CRYPTO_SEC
+  ).toString(CryptoJS.enc.Utf8);
+  let otpData;
+  try {
+    otpData = JSON.parse(decrypted);
+  } catch (error) {
+    return next(new AppError("Invalid encrypted options format.", 400));
+  }
+
+  const { code, expirationTime } = otpData;
+  // Check if the OTP has expired
+  const currentTime = new Date().getTime();
+  if (currentTime > expirationTime) {
+    return next(new AppError("Verification code has expired.", 400));
+  }
+
+  if (code != otp) {
+    return next(new AppError("Invalid verification code.", 400));
+  }
+
+  return successMessage(202, res, "Correct OTP", null);
+});
+
+
+
+
+const setEmailPassword = (model) =>
+  catchAsync(async (req, res, next) => {
+    const { email,  otp, newPassword } = req.body;
+    const check = validatePassword(newPassword);
+    if (check.length > 0) {
+      return next(new AppError(check, 400));
+    }
+    const errors = [];
+
+    if (!email) {
+      errors.push("Email is required.");
+    }
+
+    if (!otp) {
+      errors.push("Verification code is required.");
+    }
+
+    if (errors.length > 0) {
       return next(new AppError(errors, 400));
     }
 
-    const { name, email, phoneNumber, location } = value;
-    const userId = req.user.id; // Assuming user ID is available in req.user
+    const user = await model.findOne({ email });
+    if (!user) {
+      return next(new AppError("User not found.", 400));
+    }
+      const encryptOpts = user.forgetPassword; // Assuming `forgetPassword` contains the encrypted OTP options
+      if (!encryptOpts) {
+        return next(new AppError("No OTP found for this user.", 400));
+      }
+    // Decrypt the encrypted options and compare with the user-entered code
+    const decrypted = CryptoJS.AES.decrypt(
+      decodeURIComponent(encryptOpts),
+      process.env.CRYPTO_SEC
+    ).toString(CryptoJS.enc.Utf8);
 
-    // Find and update user profile
-    let updatedUser = await user_model.findByIdAndUpdate(
-      userId,
-      { name, email, phoneNumber, location },
-      { new: true } // Return the updated document
-    );
-
-    if (!updatedUser) {
-      return next(new AppError("User not found", 404));
+    let otpData;
+    try {
+      otpData = JSON.parse(decrypted);
+    } catch (error) {
+      return next(new AppError("Invalid encrypted options format.", 400));
     }
 
-    // Remove sensitive data before sending response
-    updatedUser = JSON.parse(JSON.stringify(updatedUser));
-    updatedUser.password = undefined;
-    updatedUser.refreshToken = undefined;
+    const { code, expirationTime } = otpData;
 
-    return successMessage(
-      200,
-      res,
-      "Profile updated successfully",
-      updatedUser
-    );
-  })
+    if (code != otp) {
+      return next(new AppError("Invalid verification code.", 400));
+    }
+
+    // Check if the OTP has expired
+    const currentTime = new Date().getTime();
+    if (currentTime > expirationTime) {
+      return next(new AppError("Verification code has expired.", 400));
+    }
+
+
+    // Find the user by email
+    
+     console.log("User's OTP state:", user.forgetPassword);
+    if (!user.forgetPassword) {
+      return next(new AppError("Unable to change password without OTP", 400));
+    }
+    if (encryptOpts != user.forgetPassword) {
+      new AppError("generate otp first", 400);
+    }
+    // Update the user's password
+    user.password = CryptoJS.AES.encrypt(
+      newPassword,
+      process.env.CRYPTO_SEC
+    ).toString();
+    user.forgetPassword = null;
+    await user.save();
+    return successMessage(202, res, "Password reset successfully.", null);
+  });
+
 
 
 module.exports = {
   signUpUser,
   loginUser,
-  verifyOTP,
-  updateProfile
+  otpValidation,
+  verifyAccount,
+  updateProfile,
+  setEmailPassword,
 };

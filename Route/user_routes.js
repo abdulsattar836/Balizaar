@@ -7,15 +7,20 @@ const user_model = require("../Model/user_model");
 const {
   signUpUser,
   loginUser,
-  verifyOTP,
+  verifyAccount,
   updateProfile,
+  otpValidation,
+  setEmailPassword,
 } = require("../Controller/user_controller");
 const { logout } = require("../functions/user/user_functions");
 const {
   forgetPassword,
   setPassword,
 } = require("../functions/password/password_functions");
-const { otpValidation, refreshToken, verifyToken } = require("../utils/verifyToken_util");
+const {
+  refreshToken,
+  verifyToken,
+} = require("../utils/verifyToken_util");
 // const { verifyToken } = require("../utils/verifyToken_util");
 /**
  * @swagger
@@ -25,8 +30,6 @@ const { otpValidation, refreshToken, verifyToken } = require("../utils/verifyTok
  *     description: Sign up a new user and send OTP for email verification. If the user is already signed up but not verified, resend the OTP.
  *     tags:
  *       - User/account
- *     security:
- *       - bearerAuth: [] 
  *     requestBody:
  *       required: true
  *       content:
@@ -83,8 +86,6 @@ ROUTE.route("/signup").post(signUpUser);
  *     summary: Log in a user
  *     tags:
  *       - User/account
- *     security:
- *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -128,10 +129,10 @@ ROUTE.route("/logout").post(logout(user_model));
 
 /**
  * @swagger
- * /api/v1/user/verify-otp:
+ * /api/v1/user/verifyAccount:
  *   post:
- *     summary: Verify OTP
- *     description: Verifies the OTP for user email verification
+ *     summary: Verify Account
+ *     description: Verified the Account for user email verification
  *     tags:
  *       - User/account
  *     requestBody:
@@ -155,7 +156,7 @@ ROUTE.route("/logout").post(logout(user_model));
  *       200:
  *         description: Email verified successfully
  */
-ROUTE.route("/verify-otp").post(verifyOTP);
+ROUTE.route("/verifyAccount").post(verifyAccount);
 
 /**
  * @swagger
@@ -178,22 +179,51 @@ ROUTE.route("/refresh-token").post(refreshToken(user_model));
  * @swagger
  * /api/v1/user/forget-password:
  *   get:
- *     summary: Request password reset
- *     description: Sends an OTP to the user's email for password reset.
+ *     summary: Initiate forgot password process
  *     tags:
  *       - User/account
  *     parameters:
  *       - in: query
  *         name: email
  *         required: true
- *         description: Email of the user requesting password reset.
  *         schema:
  *           type: string
+ *         description: The user's email
  *     responses:
  *       202:
  *         description: OTP sent successfully
  */
 ROUTE.route("/forget-password").get(forgetPassword(user_model));
+
+
+/** 
+ * @swagger
+ * /api/v1/user/otp-validation:
+ *   get:
+ *     summary: Validate OTP for user email
+ *     description: Validates the OTP sent to the user's email. Checks if the OTP is correct and if it has expired. Includes the ability to handle encrypted options.
+ *     tags:
+ *       - User/account
+ *     parameters:
+ *       - in: query
+ *         name: email
+ *         schema:
+ *           type: string
+ *           format: email
+ *         required: true
+ *         description: The email address of the user.
+ *       - in: query
+ *         name: otp
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The OTP entered by the user.
+ *     responses:
+ *       '202':
+ *         description: OTP is correct and the user is successfully validated.
+ */
+ROUTE.route("/otp-validation").get(otpValidation);
+
 
 /**
  * @swagger
@@ -203,6 +233,8 @@ ROUTE.route("/forget-password").get(forgetPassword(user_model));
  *     description: Allows users to reset their password by providing their email, old password, and a new password.
  *     tags:
  *       - User/account
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -231,8 +263,6 @@ ROUTE.route("/forget-password").get(forgetPassword(user_model));
 
 ROUTE.route("/setpassword").post(setPassword(user_model));
 
-
-
 /**
  * @swagger
  * /api/v1/user/profile:
@@ -253,13 +283,6 @@ ROUTE.route("/setpassword").post(setPassword(user_model));
  *               name:
  *                 type: string
  *                 example: "John Doe"
- *               email:
- *                 type: string
- *                 format: email
- *                 example: "john.doe@example.com"
- *               password:
- *                 type: string
- *                 example: "password123"
  *               phoneNumber:
  *                 type: string
  *                 example: "+1234567890"
@@ -279,5 +302,42 @@ ROUTE.route("/setpassword").post(setPassword(user_model));
  *         description: Profile updated successfully
  */
 ROUTE.route("/profile").put(verifyToken([user_model]), updateProfile);
+
+
+/**
+ * @swagger
+ * /api/v1/user/set-password:
+ *   post:
+ *     summary: Set a new password for a user
+ *     description: Allows a user to set a new password using a verification code (OTP) and encrypted options. The endpoint verifies the OTP, checks expiration, and updates the password if everything is correct.
+ *     tags:
+ *       - User/account
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: The email address of the user requesting to set a new password.
+ *               otp:
+ *                 type: string
+ *                 description: The OTP sent to the user's email.
+ *               newPassword:
+ *                 type: string
+ *                 description: The new password the user wants to set.
+ *             required:
+ *               - email
+ *               - otp
+ *               - encryptOpts
+ *               - newPassword
+ *     responses:
+ *       '202':
+*         description: Password updated successfully
+ */
+ROUTE.route("/set-password").post(setEmailPassword(user_model));
 
 module.exports = ROUTE;

@@ -21,8 +21,6 @@ const loginUserValidation = Joi.object({
 
 const updateprofileValidation = Joi.object({
   name: Joi.string().optional(),
-  email: Joi.string().email().optional(),
-  password: Joi.string().required(),
   phoneNumber: Joi.string().optional(),
   location: Joi.object({
     type: Joi.string().valid("Point").required(),

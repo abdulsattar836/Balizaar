@@ -16,7 +16,7 @@ const logout = (model) =>
     refreshToken = refreshToken[1];
     const user = await model.findOne({ refreshToken });
     if (!user) {
-      return next(new AppError("this refreshToken not exist", 400));
+      return next(new AppError("you are not login", 400));
     }
 
     await model.updateOne(
@@ -24,12 +24,7 @@ const logout = (model) =>
       { $pull: { refreshToken: refreshToken } }
     );
 
-    return successMessage(
-      202,
-      res,
-      "logout successfully",
-      null
-    );
+    return successMessage(202, res, "logout successfully", null);
   });
 
 module.exports = {

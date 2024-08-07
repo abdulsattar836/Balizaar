@@ -12,6 +12,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    forgetPassword: {
+      type: String,
+      default: null,
+    },
     otp: {
       default: null, // Optional if not required at user creation
       type: String,
@@ -29,6 +33,6 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-userSchema.index({location:"2dsphere"})
+userSchema.index({ location: "2dsphere" });
 const userSchemaData = mongoose.model("User", userSchema);
 module.exports = userSchemaData;

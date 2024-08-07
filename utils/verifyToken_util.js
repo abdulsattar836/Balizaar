@@ -7,6 +7,7 @@ const AppError = require("./appError");
 // crypto-js
 const CryptoJS = require("crypto-js");
 /* models */
+const user_model = require("../Model/user_model");
 // random digit
 const {
   generateRandomString,
@@ -107,32 +108,50 @@ const refreshToken = (model) =>
 
 // otp validation
 const otpValidation = catchAsync(async (req, res, next) => {
-  const { otp } = req.query;
-  // Decrypt the encrypted options and compare with the user-entered code
-  const decrypted = CryptoJS.AES.decrypt(
-    decodeURIComponent(encryptOpts),
-    process.env.CRYPTO_SEC
-  ).toString(CryptoJS.enc.Utf8);
-  let otpData;
+  const { email, otp } = req.query;
+  if (!email || !otp) {
+    return next(new AppError("Email and OTP are required", 400));
+  }
+
+  const user = await user_model.findOne({ email });
+  if (!user) {
+    return next(new AppError("No user with this email", 400));
+  }
+
+  const encryptedOtp = decodeURIComponent(user.forgetPassword);
+
   try {
-    otpData = JSON.parse(decrypted);
+    // Decrypt the encrypted OTP
+    const decrypted = CryptoJS.AES.decrypt(
+      encryptedOtp,
+      process.env.CRYPTO_SEC
+    ).toString(CryptoJS.enc.Utf8);
+
+    console.log("Decrypted OTP data:", decrypted); // Log decrypted data
+
+    // Parse the decrypted data to get the OTP and expiration time
+    const otpData = JSON.parse(decrypted);
+
+    const { code, expirationTime } = otpData;
+
+    // Check if the OTP has expired
+    const currentTime = new Date().getTime();
+    if (currentTime > expirationTime) {
+      return next(new AppError("Verification code has expired.", 400));
+    }
+
+    // Check if the provided OTP matches the stored OTP
+    if (code !== otp) {
+      return next(new AppError("Invalid verification code.", 400));
+    }
+
+    return successMessage(202, res, "Correct OTP", null);
   } catch (error) {
-    return next(new AppError("Invalid encrypted options format.", 400));
+    console.error("Error decrypting OTP:", error); // Log error for debugging
+    return next(new AppError("Invalid or corrupt OTP data.", 500));
   }
-
-  const { code, expirationTime } = otpData;
-  // Check if the OTP has expired
-  const currentTime = new Date().getTime();
-  if (currentTime > expirationTime) {
-    return next(new AppError("Verification code has expired.", 400));
-  }
-
-  if (code != otp) {
-    return next(new AppError("Invalid verification code.", 400));
-  }
-
-  return successMessage(202, res, "Correct OTP", null);
 });
+
 
 module.exports = {
   generateAccessTokenRefreshToken,

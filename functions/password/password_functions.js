@@ -12,6 +12,8 @@ const CryptoJS = require("crypto-js");
 const {
   validatePassword,
 } = require("../../utils/validation/validate password");
+//
+const { generateOtp, encryptOtp } = require("../otp expiry/otp_expiry");
 
 // userPasswordCheck
 const userPasswordCheck = (user, password) => {
@@ -27,37 +29,34 @@ const userPasswordCheck = (user, password) => {
   }
 };
 // forgetPassword
-const forgetPassword = (model) =>
-  catchAsync(async (req, res, next) => {
-    const { email } = req.query;
-    const user = await model.findOne({ email });
-    if (user) {
-      function generateSixDigitNumber() {
-        const min = 100000; // Smallest 6-digit number
-        const max = 999999; // Largest 6-digit number
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-      }
+// const forgetPassword = (model) =>
+//   catchAsync(async (req, res, next) => {
+//     const { email } = req.query;
+//     const user = await model.findOne({ email });
+//     if (user) {
+//       function generateSixDigitNumber() {
+//         const min = 100000; // Smallest 6-digit number
+//         const max = 999999; // Largest 6-digit number
+//         return Math.floor(Math.random() * (max - min + 1)) + min;
+//       }
 
-      const sixDigitNumber = generateSixDigitNumber();
-      const expirationTime = new Date().getTime() + 5 * 60 * 1000; // 5 minutes expiration
-      await new sendForgotOtp(email, sixDigitNumber).sendVerificationCode();
-      let otp = CryptoJS.AES.encrypt(
-        JSON.stringify({
-          code: sixDigitNumber,
-          expirationTime: expirationTime,
-        }),
-        process.env.CRYPTO_SEC
-      ).toString();
-      user.forgetPassword = encodeURIComponent(otp);
-      await user.save();
-      return successMessage(202, res, null, {
-        email,
-        otp: encodeURIComponent(otp),
-      });
-    } else {
-      return next(new AppError("not user with this email", 400));
-    }
-  });
+//       const sixDigitNumber = generateSixDigitNumber();
+//       const expirationTime = new Date().getTime() + 5 * 60 * 1000; // 5 minutes expiration
+//       await new sendForgotOtp(email, sixDigitNumber).sendVerificationCode();
+//       let otp = CryptoJS.AES.encrypt(
+//         JSON.stringify({
+//           code: sixDigitNumber,
+//           expirationTime: expirationTime,
+//         }),
+//         process.env.CRYPTO_SEC
+//       ).toString();
+//       user.forgetPassword = encodeURIComponent(otp);
+//       await user.save();
+//       return successMessage(202, res,"otp send to Email successfully ");
+//     } else {
+//       return next(new AppError("not user with this email", 400));
+//     }
+//   });
 // setPassword
 // const setPassword = (model) =>
 //   catchAsync(async (req, res, next) => {
@@ -126,11 +125,40 @@ const forgetPassword = (model) =>
 //     await user.save();
 //     return successMessage(202, res, "Password reset successfully.", null);
 //   });
+const forgetPassword = (model) =>
+  catchAsync(async (req, res, next) => {
+    const { email } = req.query;
+    const user = await model.findOne({ email });
+    if (user) {
+      function generateSixDigitNumber() {
+        const min = 100000; // Smallest 6-digit number
+        const max = 999999; // Largest 6-digit number
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+
+      const sixDigitNumber = generateSixDigitNumber();
+      const expirationTime = new Date().getTime() + 5 * 60 * 1000; // 5 minutes expiration
+      await new sendForgotOtp(email, sixDigitNumber).sendVerificationCode();
+      let otp = CryptoJS.AES.encrypt(
+        JSON.stringify({
+          code: sixDigitNumber,
+          expirationTime: expirationTime,
+        }),
+        process.env.CRYPTO_SEC
+      ).toString();
+      user.forgetPassword = encodeURIComponent(otp);
+      await user.save();
+      return successMessage(202, res, null, {
+        email,
+      });
+    } else {
+      return next(new AppError("not user with this email", 400));
+    }
+  });
 
 const setPassword = (model) =>
   catchAsync(async (req, res, next) => {
-    const { email, currentPassword, newPassword } =
-      req.body;
+    const { email, currentPassword, newPassword } = req.body;
     const check = validatePassword(newPassword);
 
     if (check.length > 0) {
@@ -143,17 +171,15 @@ const setPassword = (model) =>
       errors.push("Email is required.");
     }
 
-  
-
     if (errors.length > 0) {
       return next(new AppError(errors, 400));
     }
 
     // Find the user (assuming user information is available in req.user)
-        const user = await model.findOne({ email });
-        if (!user) {
-          return next(new AppError("User not found.", 400));
-        }
+    const user = await model.findOne({ email });
+    if (!user) {
+      return next(new AppError("User not found.", 400));
+    }
 
     // Check old password
     const decryptedcurrentPassword = CryptoJS.AES.decrypt(
@@ -174,7 +200,6 @@ const setPassword = (model) =>
 
     return successMessage(202, res, "Password reset successfully.", null);
   });
-
 
 module.exports = {
   userPasswordCheck,
