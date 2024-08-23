@@ -6,12 +6,18 @@ const AppError = require("../../utils/appError");
 const catchAsync = require("../../utils/catchAsync");
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 // logout
 =======
 // method POST
 // route /api/v1/user/logout:
 // @desciption for  logout user
 >>>>>>> bfda625 (okdevelopment)
+=======
+// method POST
+// route /api/v1/user/logout:
+// @desciption for  logout user
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
 const logout = (model) =>
   catchAsync(async (req, res, next) => {
     let refreshToken = req.header("Authorization");

@@ -41,6 +41,7 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+<<<<<<< HEAD
      location: {
       type: {
         type: String,
@@ -51,12 +52,17 @@ const productSchema = new mongoose.Schema(
         required: true,
       },
     },
+=======
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
   },
   {
     timestamps: true,
   }
 );
+<<<<<<< HEAD
 productSchema.index({ location: "2dsphere" });
+=======
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
 
 const productSchemaData = mongoose.model("Product", productSchema);
 module.exports = productSchemaData;

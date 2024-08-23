@@ -20,18 +20,24 @@ function isOtpExpired(expirationTime) {
 // Generate OTP
 const { otp, expirationTime } = generateOtp();
 <<<<<<< HEAD
+<<<<<<< HEAD
 console.log(
   `Generated OTP: ${otp}, Expiration Time: ${new Date(
     expirationTime
   ).toLocaleTimeString()}`
 );
 =======
+=======
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
 // console.log(
 //   `Generated OTP: ${otp}, Expiration Time: ${new Date(
 //     expirationTime
 //   ).toLocaleTimeString()}`
 // );
+<<<<<<< HEAD
 >>>>>>> bfda625 (okdevelopment)
+=======
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
 
 function encryptOtp(otpData, secret) {
   return CryptoJS.AES.encrypt(JSON.stringify(otpData), secret).toString();
@@ -44,10 +50,14 @@ function decryptOtp(encryptedData, secret) {
 setTimeout(() => {
   if (isOtpExpired(expirationTime)) {
 <<<<<<< HEAD
+<<<<<<< HEAD
     console.log("OTP has expired.");
 =======
     // console.log("OTP has expired.");
 >>>>>>> bfda625 (okdevelopment)
+=======
+    // console.log("OTP has expired.");
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
   } else {
     console.log("OTP is still valid.");
   }

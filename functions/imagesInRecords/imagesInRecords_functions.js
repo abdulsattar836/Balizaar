@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 // check duplication of aws image in db
 const checkDuplicateImgInRecords = async (fileName, fieldName) => {
   try {
@@ -36,6 +37,8 @@ const checkDuplicateImgsInRecords = async (fileNames, fieldName) => {
 
       if (festival) {
 =======
+=======
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
 // database model
 const product_model = require("../../Model/product_model.js");
 
@@ -48,7 +51,10 @@ const checkDuplicateImgsInRecords = async (fileNames, fieldName) => {
       ]);
 
       if (product) {
+<<<<<<< HEAD
 >>>>>>> bfda625 (okdevelopment)
+=======
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
         return fileName;
       }
     });
@@ -81,8 +87,11 @@ const checkDuplicateImgsInRecords = async (fileNames, fieldName) => {
 
 module.exports = {
 <<<<<<< HEAD
+<<<<<<< HEAD
   checkDuplicateImgInRecords,
 =======
 >>>>>>> bfda625 (okdevelopment)
+=======
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
   checkDuplicateImgsInRecords,
 };
