@@ -14,9 +14,12 @@ const {
 } = require("../../utils/validation/validate password");
 //
 <<<<<<< HEAD
+<<<<<<< HEAD
 const { generateOtp, encryptOtp } = require("../otp expiry/otp_expiry");
 =======
 >>>>>>> bfda625 (okdevelopment)
+=======
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
 
 // userPasswordCheck
 const userPasswordCheck = (user, password) => {
@@ -31,6 +34,7 @@ const userPasswordCheck = (user, password) => {
     throw new AppError("password is incorrect", 400);
   }
 };
+<<<<<<< HEAD
 <<<<<<< HEAD
 // forgetPassword
 // const forgetPassword = (model) =>
@@ -130,11 +134,16 @@ const userPasswordCheck = (user, password) => {
 //     return successMessage(202, res, "Password reset successfully.", null);
 //   });
 =======
+=======
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
 
 // method GET
 // route /api/v1/user/forget-password:
 // @desciption for  forgetPassword
+<<<<<<< HEAD
 >>>>>>> bfda625 (okdevelopment)
+=======
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
 const forgetPassword = (model) =>
   catchAsync(async (req, res, next) => {
     const { email } = req.query;
@@ -167,11 +176,17 @@ const forgetPassword = (model) =>
   });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 // method POST
 // route /api/v1/user/setpassword:
 // @desciption for  set app password
 >>>>>>> bfda625 (okdevelopment)
+=======
+// method POST
+// route /api/v1/user/setpassword:
+// @desciption for  set app password
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
 const setPassword = (model) =>
   catchAsync(async (req, res, next) => {
     const { email, currentPassword, newPassword } = req.body;

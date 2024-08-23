@@ -3,10 +3,14 @@ const express = require("express");
 const ROUTE = express.Router();
 // model
 <<<<<<< HEAD
+<<<<<<< HEAD
 const user_model = require("../Model/user_model");
 =======
 const user_model = require("../Model/vendor_model");
 >>>>>>> bfda625 (okdevelopment)
+=======
+const user_model = require("../Model/vendor_model");
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
 // controller
 const {
   signUpUser,
@@ -22,6 +26,7 @@ const {
   setPassword,
 } = require("../functions/password/password_functions");
 <<<<<<< HEAD
+<<<<<<< HEAD
 const {
   refreshToken,
   verifyToken,
@@ -29,6 +34,9 @@ const {
 =======
 const { refreshToken, verifyToken } = require("../utils/verifyToken_util");
 >>>>>>> bfda625 (okdevelopment)
+=======
+const { refreshToken, verifyToken } = require("../utils/verifyToken_util");
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
 // const { verifyToken } = require("../utils/verifyToken_util");
 /**
  * @swagger
@@ -204,11 +212,15 @@ ROUTE.route("/refresh-token").post(refreshToken(user_model));
 ROUTE.route("/forget-password").get(forgetPassword(user_model));
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 /** 
 =======
 /**
 >>>>>>> bfda625 (okdevelopment)
+=======
+/**
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
  * @swagger
  * /api/v1/user/otp-validation:
  *   get:
@@ -237,9 +249,12 @@ ROUTE.route("/forget-password").get(forgetPassword(user_model));
 ROUTE.route("/otp-validation").get(otpValidation);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 >>>>>>> bfda625 (okdevelopment)
+=======
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
 /**
  * @swagger
  * /api/v1/user/setpassword:
@@ -319,9 +334,12 @@ ROUTE.route("/setpassword").post(setPassword(user_model));
 ROUTE.route("/profile").put(verifyToken([user_model]), updateProfile);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 >>>>>>> bfda625 (okdevelopment)
+=======
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
 /**
  * @swagger
  * /api/v1/user/set-password:
@@ -355,10 +373,14 @@ ROUTE.route("/profile").put(verifyToken([user_model]), updateProfile);
  *     responses:
  *       '202':
 <<<<<<< HEAD
+<<<<<<< HEAD
 *         description: Password updated successfully
 =======
  *         description: Password updated successfully
 >>>>>>> bfda625 (okdevelopment)
+=======
+ *         description: Password updated successfully
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
  */
 ROUTE.route("/set-password").post(setEmailPassword(user_model));
 

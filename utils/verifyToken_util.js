@@ -8,10 +8,14 @@ const AppError = require("./appError");
 const CryptoJS = require("crypto-js");
 /* models */
 <<<<<<< HEAD
+<<<<<<< HEAD
 const user_model = require("../Model/user_model");
 =======
 const user_model = require("../Model/vendor_model");
 >>>>>>> bfda625 (okdevelopment)
+=======
+const user_model = require("../Model/vendor_model");
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
 // random digit
 const {
   generateRandomString,
@@ -20,12 +24,18 @@ const {
 const { successMessage } = require("../functions/success/success_functions");
 const signRefreshToken = (uniqueId) => {
 <<<<<<< HEAD
+<<<<<<< HEAD
   return JWT.sign({ uniqueId }, process.env.JWT_SEC);
 =======
   return JWT.sign({ uniqueId }, process.env.JWT_SEC, {
     expiresIn: process.env.expirydateRefreshToken,
   });
 >>>>>>> bfda625 (okdevelopment)
+=======
+  return JWT.sign({ uniqueId }, process.env.JWT_SEC, {
+    expiresIn: process.env.expirydateRefreshToken,
+  });
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
 };
 const signAccessToken = (id, uniqueId) => {
   return JWT.sign({ id, uniqueId }, process.env.JWT_SEC, {
@@ -92,13 +102,19 @@ const verifyToken = (model) => async (req, res, next) => {
   }
 };
 <<<<<<< HEAD
+<<<<<<< HEAD
 // refreshToken
 =======
+=======
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
 
 // method POST
 // route /api/v1/user/refresh-token:
 // @desciption for  apply refreshToken to generate AccessToken
+<<<<<<< HEAD
 >>>>>>> bfda625 (okdevelopment)
+=======
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
 const refreshToken = (model) =>
   catchAsync(async (req, res, next) => {
     let refreshToken = req.header("Authorization");
@@ -109,6 +125,7 @@ const refreshToken = (model) =>
     refreshToken = refreshToken[1];
 
     // Retrieve the user from the database based on the refresh token
+<<<<<<< HEAD
 <<<<<<< HEAD
     let user = await model
       .findOne({ refreshToken: refreshToken })
@@ -121,6 +138,8 @@ const refreshToken = (model) =>
     return successMessage(202, res, "refresh token run successfully", {
       accessToken: newAccessToken,
 =======
+=======
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
     let user = await model.findOne({ refreshToken: refreshToken });
 
     if (!user) {
@@ -151,12 +170,16 @@ const refreshToken = (model) =>
     return successMessage(202, res, "refresh token run successfully", {
       accessToken,
       refreshToken: refreshTokenis,
+<<<<<<< HEAD
 >>>>>>> bfda625 (okdevelopment)
+=======
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
       ...JSON.parse(JSON.stringify(user)),
     });
   });
 
 // otp validation
+<<<<<<< HEAD
 <<<<<<< HEAD
 const otpValidation = catchAsync(async (req, res, next) => {
   const { email, otp } = req.query;
@@ -204,6 +227,8 @@ const otpValidation = catchAsync(async (req, res, next) => {
 });
 
 =======
+=======
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
 // const otpValidation = catchAsync(async (req, res, next) => {
 //   const { email, otp } = req.query;
 //   if (!email || !otp) {
@@ -248,15 +273,22 @@ const otpValidation = catchAsync(async (req, res, next) => {
 //     return next(new AppError("Invalid or corrupt OTP data.", 500));
 //   }
 // });
+<<<<<<< HEAD
 >>>>>>> bfda625 (okdevelopment)
+=======
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
 
 module.exports = {
   generateAccessTokenRefreshToken,
   verifyToken,
   refreshToken,
 <<<<<<< HEAD
+<<<<<<< HEAD
   otpValidation,
 =======
   // otpValidation,
 >>>>>>> bfda625 (okdevelopment)
+=======
+  // otpValidation,
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
 };

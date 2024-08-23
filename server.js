@@ -20,11 +20,17 @@ const dotenv = require("dotenv");
 dotenv.config({ path: ".env" });
 /* routes */
 const userRouter = require("./Route/user_routes");
+<<<<<<< HEAD
 
 const productRoutes = require("./Route/product_route");
 const filerouter = require("./Route/filesystem_routes");
 
 
+=======
+const productRoutes = require("./Route/product_route");
+const filerouter = require("./Route/filesystem_routes");
+
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
 const app = express();
 const server = http.createServer(app);
 
@@ -52,6 +58,7 @@ app.use(
     limit: "10kb",
   })
 );
+<<<<<<< HEAD
 
 app.use(cookieParser());
 
@@ -60,6 +67,10 @@ app.use(express.static(path.join(__dirname, "public")));
 // const port = 8000;
 app.use(cookieParser());
 
+=======
+const port = 8000;
+app.use(cookieParser());
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
 // Define the desired folder structure
 const folderStructure = ["files"];
 
@@ -78,21 +89,31 @@ const createFoldersMiddleware = () => {
 // function for make all needed global files : calls here
 createFoldersMiddleware();
 // Serve static files from the 'files' directory
+<<<<<<< HEAD
 
 app.use("/files", express.static(path.join(__dirname, "files"))); // Corrected path for static files
 
 app.use("/", express.static(path.join(__dirname, "files"))); // Corrected path for static files
 
+=======
+app.use("/", express.static(path.join(__dirname, "files"))); // Corrected path for static files
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
 app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 
 /* routes */
 app.use("/api/v1/user", userRouter);
+<<<<<<< HEAD
 
 
 app.use("/api/v1/product", productRoutes);
 app.use("/api/v1/upload", filerouter);
 
 
+=======
+app.use("/api/v1/product", productRoutes);
+app.use("/api/v1/upload", filerouter);
+
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
 const AppError = require("./utils/appError");
 const globalErrorHandler = require("./Controller/error_controller");
 app.all("*", (req, res, next) => {
@@ -106,9 +127,12 @@ app.use((err, req, res, next) => {
 });
 
 const DB = process.env.mongo_uri;
+<<<<<<< HEAD
 
 const port = 8000;
 
+=======
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
 // const port = 8000;
 
 const connectDB = async () => {
@@ -117,6 +141,7 @@ const connectDB = async () => {
     const response = await mongoose.connect(DB);
     if (response) {
       console.log("MongoDB connect successfully");
+<<<<<<< HEAD
 
 
       server.listen(port, () => {
@@ -124,6 +149,8 @@ const connectDB = async () => {
         console.log(`App run with url: http://localhost:${port}`);
       });
 
+=======
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
     }
   } catch (error) {
     console.log("error white connect to DB ==>  ", error);
@@ -131,9 +158,15 @@ const connectDB = async () => {
 };
 connectDB();
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
 server.listen(port, () => {
   // Start the server using server.listen
   console.log(`App run with url: http://localhost:${port}`);
 });
+<<<<<<< HEAD
 
+=======
+>>>>>>> bfda625c472e51baf8558974c2dfd6f936ad5ef5
